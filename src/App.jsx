@@ -66,36 +66,37 @@ function App() {
   };
 
   const pontaDeProva = async (e) => {
-    const result = await fetch(image[0])
+    const result = await fetch(image[0]) // Certifique-se de que image[0] seja uma URL válida da imagem
       .then((res) => res.blob())
       .then((blob) => {
         const file = new File([blob], "imageResult.bmp", {
           type: "image/bmp",
         });
-
+  
         return URL.createObjectURL(file);
       });
-    const pixels = await getImagePixels(result);
+    const pixels = await getImagePixels(result); // Implemente a função getImagePixels para obter os pixels da imagem
+  
     const x = e.pageX - e.target.offsetLeft;
     const y = e.pageY - e.target.offsetTop;
-
+  
     const gray = convertRGBToGrayScale(
       pixels.get(x, y, 0),
       pixels.get(x, y, 1),
       pixels.get(x, y, 2)
     );
-
-    console.log(gray)
-   
-    if(imageResult != null) {
-      pontaDeProva2(e.pageX, e.pageY)
+  
+    console.log(gray);
+  
+    if (imageResult != null) {
+      pontaDeProva2(x, y, pixels);
     }
-
+  
     setA(gray);
     setCoordinates({ x: x, y: y });
   };
-
-  const pontaDeProva2 = async (pageX, pageY) => {
+  
+  const pontaDeProva2 = async (x, y) => {
     const result = await fetch(imageResult?.src)
       .then((res) => res.blob())
       .then((blob) => {
@@ -106,17 +107,15 @@ function App() {
         return URL.createObjectURL(file);
       });
     const pixels = await getImagePixels(result);
-    const x = pageX - imageBRef.current.offsetLeft;
-    const y = pageY - imageBRef.current.offsetTop;
 
     const gray = convertRGBToGrayScale(
       pixels.get(x, y, 0),
       pixels.get(x, y, 1),
       pixels.get(x, y, 2)
     );
-
-    console.log(gray)
-   
+  
+    console.log(gray);
+  
     setB(gray);
   };
 
@@ -296,33 +295,43 @@ function App() {
 
   const histograma = async () => {
     const pixels = await getImagePixels(image[0]);
-
-    const histograma = new Array(256).fill(0);
-
+  
+    const histograma = ndarray(new Uint32Array(256), [256]);
+  
     // Percorra os pixels da imagem e conte a frequência de cada valor de intensidade
     for (let x = 0; x < pixels.shape[0]; x++) {
       for (let y = 0; y < pixels.shape[1]; y++) {
         const intensidade = Math.floor(pixels.get(x, y) * 255);
-        histograma[intensidade]++;
+        histograma.set(intensidade, histograma.get(intensidade) + 1);
       }
     }
-
+  
     // Encontre a intensidade máxima no histograma para normalização
-    const maxIntensidade = Math.max(...histograma);
-
-    // Crie uma imagem representando o histograma
-    const histogramaImg = ndarray(new Uint8Array(256 * 256 * 4), [256, 256, 4]);
+    const maxIntensidade = Math.max(...histograma.data);
+  
+    // Crie uma nova imagem representando o histograma
+    const histogramaImgData = new Uint8ClampedArray(256 * 100 * 4); // Altura fixa em 100 para melhor visualização
+  
     for (let i = 0; i < 256; i++) {
-      const altura = Math.floor((histograma[i] / maxIntensidade) * 255);
-      for (let j = 0; j < altura; j++) {
-        for (let c = 0; c < 4; c++) {
-          histogramaImg.set(i, 255 - j, c, 255);
+      const altura = Math.floor((histograma.get(i) / maxIntensidade) * 100);
+      for (let j = 0; j < 100; j++) {
+        if (j < altura) {
+          const index = i * 4 * 100 + j * 4;
+          histogramaImgData.set([i, i, i, 255], index); // Define os valores de R, G, B e A
         }
       }
     }
-
-    const img = getImgFromArr(histogramaImg.data);
-
+  
+    const histogramaImg = new ImageData(histogramaImgData, 256, 100);
+    console.log(histogramaImg)
+    const canvas = document.createElement("canvas");
+    canvas.width = 256;
+    canvas.height = 100;
+    const ctx = canvas.getContext("2d");
+    ctx.putImageData(histogramaImg, 0, 0);
+  
+    const img = new Image();
+    img.src = canvas.toDataURL();
     setImageResult(img);
   };
 
