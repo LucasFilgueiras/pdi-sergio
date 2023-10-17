@@ -56,6 +56,7 @@ function App() {
 
     return gray;
   };
+  //a
 
   const getImagePixels = async (imageData) => {
     const bytesIn = await fetch(imageData)
