@@ -24,6 +24,7 @@ function App() {
   const filterOptions = [
     "negativo",
     "log",
+    "log inverso",
     "potência",
     "raiz",
     "ampliacaoBilinear512",
@@ -152,8 +153,33 @@ function App() {
           pixels.get(x, y, 1),
           pixels.get(x, y, 2)
         );
-        let c = 255 / Math.log(1 + gray);
-        const log = c * Math.log(1 + gray);
+        //let c = 50 / Math.log(1 + gray);
+        const log = Math.log(1 + gray) * 1;
+
+        pixels.set(x, y, 0, log);
+        pixels.set(x, y, 1, log);
+        pixels.set(x, y, 2, log);
+      }
+    }
+
+    const img = getImgFromArr(pixels.data);
+
+    setImageResult(img);
+  };
+
+  const calcInverseLog = async () => {
+    const pixels = await getImagePixels(image[0]);
+    const [width, height] = pixels.shape;
+
+    for (let x = 0; x < width; x++) {
+      for (let y = 0; y < height; y++) {
+        const gray = convertRGBToGrayScale(
+          pixels.get(x, y, 0),
+          pixels.get(x, y, 1),
+          pixels.get(x, y, 2)
+        );
+        //let c = 50 / Math.log(1 + gray);
+        const log = Math.exp(gray/1) - 1;
 
         pixels.set(x, y, 0, log);
         pixels.set(x, y, 1, log);
@@ -1185,6 +1211,9 @@ function App() {
       case "operadorSobel":
         await operadorSobel();
         break;
+        case "log inverso":
+          await calcInverseLog();
+          break;
     }
   };
 
