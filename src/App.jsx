@@ -141,6 +141,7 @@ function App() {
 
     setImageResult(img);
   };
+  //a
 
   const calcLog = async () => {
     const pixels = await getImagePixels(image[0]);
