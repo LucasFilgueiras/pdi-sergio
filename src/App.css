@@ -1,0 +1,52 @@
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+body {
+  background-color: #242424;
+  color: white;
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+}
+
+.center {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+input[type=file] {
+  margin-bottom: 1rem;
+}
+
+select {
+  padding: 5px;
+  border-radius: 4px;
+  background-color: lightgray;
+}
+
+.title {
+  font-size: 50px;
+  margin-bottom: 150px;
+}
+
+.button {
+  margin-top: 20px;
+  padding: 7px;
+  border-radius: 5px;
+  background-color: blueviolet;
+  color: white;
+  font-weight: bold;
+}
+
+.button:hover {
+  cursor: pointer;
+}
+
+.input {
+  padding: 5px;
+  border-radius: 4px;
+  font-weight: bold;
+}
