@@ -124,9 +124,7 @@ function App() {
       pixels.get(x, y, 0),
       pixels.get(x, y, 1),
       pixels.get(x, y, 2)
-    );
-  
-    console.log(gray);
+    )
   
     setB(gray);
   };
@@ -250,8 +248,6 @@ function App() {
       }
     }
 
-    console.log(gamma)
-
     const img = getImgFromArr(pixels.data);
 
     setImageResult(img);
@@ -362,7 +358,6 @@ function App() {
     }
   
     const histogramaImg = new ImageData(histogramaImgData, 256, 100);
-    console.log(histogramaImg)
     const canvas = document.createElement("canvas");
     canvas.width = 256;
     canvas.height = 100;
@@ -551,11 +546,8 @@ function App() {
   };
 
   const somarImagens = async () => {
-    console.log(porcentagemSomar)
     const pixels = await getImagePixels(image[0]);
     const pixels2 = await getImagePixels(image[1]);
-
-    console.log(pixels);
 
     const largura = pixels.shape[1];
     const altura = pixels.shape[0];
@@ -1133,7 +1125,6 @@ function App() {
   };
 
   const handleImageChange = async (e) => {
-    console.log(e.target.files[0]);
     const files = Array.from(e.target.files);
     const parsedFiles = files.map((file) => {
       return URL.createObjectURL(file);
@@ -1241,7 +1232,6 @@ function App() {
   };
 
   const handleGammaChange = (e) => {
-    console.log(parseFloat(e.target.value));
     setGamma(parseFloat(e.target.value));
   };
 
