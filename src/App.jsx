@@ -81,15 +81,25 @@ function App() {
   
     const x = e.pageX - e.target.offsetLeft;
     const y = e.pageY - e.target.offsetTop;
+
+    console.log(pixels.get(x-1, y-1, 0))
+    console.log(pixels.get(x, y-1, 0))
+    console.log(pixels.get(x+1, y-1, 0))
+    console.log("----------")
+    console.log(pixels.get(x-1, y , 0))
+    console.log(pixels.get(x, y, 0))
+    console.log(pixels.get(x+1, y, 0))
+    console.log("----------")
+    console.log(pixels.get(x-1, y+1, 0))
+    console.log(pixels.get(x, y+1, 0))
+    console.log(pixels.get(x+1, y+1, 0))
   
     const gray = convertRGBToGrayScale(
       pixels.get(x, y, 0),
       pixels.get(x, y, 1),
       pixels.get(x, y, 2)
     );
-  
-    console.log(gray);
-  
+
     if (imageResult != null) {
       pontaDeProva2(x, y, pixels);
     }
@@ -154,8 +164,8 @@ function App() {
           pixels.get(x, y, 1),
           pixels.get(x, y, 2)
         );
-        //let c = 50 / Math.log(1 + gray);
-        const log = Math.log(1 + gray) * 1;
+
+        const log = 105.8864 * Math.log(1 + gray);
 
         pixels.set(x, y, 0, log);
         pixels.set(x, y, 1, log);
@@ -179,8 +189,8 @@ function App() {
           pixels.get(x, y, 1),
           pixels.get(x, y, 2)
         );
-        //let c = 50 / Math.log(1 + gray);
-        const log = Math.exp(gray/1) - 1;
+
+        const log = Math.pow(10, gray/105.8864);
 
         pixels.set(x, y, 0, log);
         pixels.set(x, y, 1, log);
@@ -204,7 +214,9 @@ function App() {
           pixels.get(x, y, 1),
           pixels.get(x, y, 2)
         );
-        const potencia = gray ^ gamma;
+        
+        const proporcao = gray/255;
+        const potencia = Math.pow(proporcao, 1/gamma) * 256;
 
         pixels.set(x, y, 0, potencia);
         pixels.set(x, y, 1, potencia);
@@ -229,8 +241,8 @@ function App() {
           pixels.get(x, y, 2)
         );
 
-        const raizQuadrada = Math.sqrt(gray/255);
-        const resultado = 255 * Math.pow(raizQuadrada, gamma);
+        const proporcao = gray/255;
+        const resultado = Math.pow(proporcao, gamma) * 256;
 
         pixels.set(x, y, 0, resultado);
         pixels.set(x, y, 1, resultado);
@@ -521,9 +533,9 @@ function App() {
 
     for (let x = 0; x < largura; x++) {
       for (let y = 0; y < altura; y++) {
-        const novoR = pixels.get(x, y, 0) / aAndB.a - aAndB.b;
-        const novoG = pixels.get(x, y, 1) / aAndB.a - aAndB.b;
-        const novoB = pixels.get(x, y, 2) / aAndB.a - aAndB.b;
+        const novoR = pixels.get(x, y, 0) / (aAndB.a - aAndB.b);
+        const novoG = pixels.get(x, y, 1) / (aAndB.a - aAndB.b);
+        const novoB = pixels.get(x, y, 2) / (aAndB.a - aAndB.b);
         const novoA = pixels.get(x, y, 3);
 
         pixels.set(x, y, 0, novoR);
