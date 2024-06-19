@@ -3,6 +3,39 @@ import ndarray from "ndarray";
 import { getImgFromArr } from "array-to-image";
 import { useRef, useState } from "react";
 import "./App.css";
+import React from 'react';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+} from 'chart.js';
+import { Bar } from 'react-chartjs-2';
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
+
+export const options = {
+  responsive: true,
+  plugins: {
+    legend: {
+      position: 'top',
+    },
+    title: {
+      display: true,
+      text: 'Chart.js Bar Chart',
+    },
+  },
+};
 
 function App() {
   const [action, setAction] = useState("");
@@ -19,7 +52,39 @@ function App() {
   const [porcentagemSomar, setPorcentagemSomar] = useState(0);
   const [a, setA] = useState(0);
   const [b, setB] = useState(0);
-  const imageBRef = useRef(null)
+  const imageBRef = useRef(null);
+
+  const countOccurrences = async (search) => {
+    const result = await fetch(image[0]);
+    const pixels = await getImagePixels(result);
+
+    return pixels.data.reduce((count, array) => {
+        for (let i = 0; i < array.length; i++) {
+            if (array[i] === search) {
+                count++;
+            }
+        }
+
+        return count;
+    }, 0);
+  }
+
+  let labels = new Array(256);
+
+  for (let i = 0; i < labels.length; i++) {
+    labels[i] = i;
+  }
+
+  const data = {
+    labels,
+    datasets: [
+      {
+        label: 'Dataset 1',
+        data: labels.map(index => countOccurrences(index)),
+        backgroundColor: 'rgba(255, 99, 132, 0.5)',
+      },
+    ],
+  };
 
   const filterOptions = [
     "negativo",
@@ -74,26 +139,26 @@ function App() {
         const file = new File([blob], "imageResult.bmp", {
           type: "image/bmp",
         });
-  
+
         return URL.createObjectURL(file);
       });
     const pixels = await getImagePixels(result); // Implemente a função getImagePixels para obter os pixels da imagem
-  
+      console.log(pixels.data)
     const x = e.pageX - e.target.offsetLeft;
     const y = e.pageY - e.target.offsetTop;
 
-    console.log(pixels.get(x-1, y-1, 0))
-    console.log(pixels.get(x, y-1, 0))
-    console.log(pixels.get(x+1, y-1, 0))
+    console.log(pixels.get(x - 1, y - 1, 0))
+    console.log(pixels.get(x, y - 1, 0))
+    console.log(pixels.get(x + 1, y - 1, 0))
     console.log("----------")
-    console.log(pixels.get(x-1, y , 0))
+    console.log(pixels.get(x - 1, y, 0))
     console.log(pixels.get(x, y, 0))
-    console.log(pixels.get(x+1, y, 0))
+    console.log(pixels.get(x + 1, y, 0))
     console.log("----------")
-    console.log(pixels.get(x-1, y+1, 0))
-    console.log(pixels.get(x, y+1, 0))
-    console.log(pixels.get(x+1, y+1, 0))
-  
+    console.log(pixels.get(x - 1, y + 1, 0))
+    console.log(pixels.get(x, y + 1, 0))
+    console.log(pixels.get(x + 1, y + 1, 0))
+
     const gray = convertRGBToGrayScale(
       pixels.get(x, y, 0),
       pixels.get(x, y, 1),
@@ -103,11 +168,11 @@ function App() {
     if (imageResult != null) {
       pontaDeProva2(x, y, pixels);
     }
-  
+
     setA(gray);
     setCoordinates({ x: x, y: y });
   };
-  
+
   const pontaDeProva2 = async (x, y) => {
     const result = await fetch(imageResult?.src)
       .then((res) => res.blob())
@@ -119,13 +184,13 @@ function App() {
         return URL.createObjectURL(file);
       });
     const pixels = await getImagePixels(result);
-
+  
     const gray = convertRGBToGrayScale(
       pixels.get(x, y, 0),
       pixels.get(x, y, 1),
       pixels.get(x, y, 2)
     )
-  
+
     setB(gray);
   };
 
@@ -188,7 +253,7 @@ function App() {
           pixels.get(x, y, 2)
         );
 
-        const log = Math.pow(10, gray/105.8864);
+        const log = Math.pow(10, gray / 105.8864);
 
         pixels.set(x, y, 0, log);
         pixels.set(x, y, 1, log);
@@ -212,9 +277,9 @@ function App() {
           pixels.get(x, y, 1),
           pixels.get(x, y, 2)
         );
-        
-        const proporcao = gray/255;
-        const potencia = Math.pow(proporcao, 1/gamma) * 256;
+
+        const proporcao = gray / 255;
+        const potencia = Math.pow(proporcao, 1 / gamma) * 256;
 
         pixels.set(x, y, 0, potencia);
         pixels.set(x, y, 1, potencia);
@@ -239,7 +304,7 @@ function App() {
           pixels.get(x, y, 2)
         );
 
-        const proporcao = gray/255;
+        const proporcao = gray / 255;
         const resultado = Math.pow(proporcao, gamma) * 256;
 
         pixels.set(x, y, 0, resultado);
@@ -330,9 +395,9 @@ function App() {
 
   const histograma = async () => {
     const pixels = await getImagePixels(image[0]);
-  
+
     const histograma = ndarray(new Uint32Array(256), [256]);
-  
+
     // Percorra os pixels da imagem e conte a frequência de cada valor de intensidade
     for (let x = 0; x < pixels.shape[0]; x++) {
       for (let y = 0; y < pixels.shape[1]; y++) {
@@ -340,13 +405,13 @@ function App() {
         histograma.set(intensidade, histograma.get(intensidade) + 1);
       }
     }
-  
+
     // Encontre a intensidade máxima no histograma para normalização
     const maxIntensidade = Math.max(...histograma.data);
-  
+
     // Crie uma nova imagem representando o histograma
     const histogramaImgData = new Uint8ClampedArray(256 * 100 * 4); // Altura fixa em 100 para melhor visualização
-  
+
     for (let i = 0; i < 256; i++) {
       const altura = Math.floor((histograma.get(i) / maxIntensidade) * 100);
       for (let j = 0; j < 100; j++) {
@@ -356,14 +421,14 @@ function App() {
         }
       }
     }
-  
+
     const histogramaImg = new ImageData(histogramaImgData, 256, 100);
     const canvas = document.createElement("canvas");
     canvas.width = 256;
     canvas.height = 100;
     const ctx = canvas.getContext("2d");
     ctx.putImageData(histogramaImg, 0, 0);
-  
+
     const img = new Image();
     img.src = canvas.toDataURL();
     setImageResult(img);
@@ -561,7 +626,7 @@ function App() {
     for (let x = 0; x < largura; x++) {
       for (let y = 0; y < altura; y++) {
 
-        const percentage = porcentagemSomar/100
+        const percentage = porcentagemSomar / 100
         // Aplica a soma ponderada dos pixels com as porcentagens
         const novoR =
           percentage * pixels.get(y, x, 0) +
@@ -1215,9 +1280,9 @@ function App() {
       case "operadorSobel":
         await operadorSobel();
         break;
-        case "log inverso":
-          await calcInverseLog();
-          break;
+      case "log inverso":
+        await calcInverseLog();
+        break;
     }
   };
 
@@ -1273,8 +1338,8 @@ function App() {
                 {['potência', 'raiz'].includes(action) && <input className="input" type="number" value={gamma} onChange={handleGammaChange} placeholder="Gamma..." />}
                 {['expansao', 'compressao'].includes(action) && (
                   <div>
-                    <input className="input" type="number" value={aAndB.a} onChange={(e) => setAAndB({...aAndB, a: parseFloat(e.target.value)})} placeholder="Valor de a" />
-                    <input className="input" type="number" value={aAndB.b} onChange={(e) => setAAndB({...aAndB, b: parseFloat(e.target.value)})} placeholder="Valor de b" />
+                    <input className="input" type="number" value={aAndB.a} onChange={(e) => setAAndB({ ...aAndB, a: parseFloat(e.target.value) })} placeholder="Valor de a" />
+                    <input className="input" type="number" value={aAndB.b} onChange={(e) => setAAndB({ ...aAndB, b: parseFloat(e.target.value) })} placeholder="Valor de b" />
                   </div>
                 )}
                 {['somarImagens'].includes(action) && (
@@ -1295,6 +1360,7 @@ function App() {
             Executar função
           </button>
         </div>
+        <Bar options={options} data={data} />
       </div>
     </>
   );

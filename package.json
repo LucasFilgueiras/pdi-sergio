@@ -11,8 +11,10 @@
   },
   "dependencies": {
     "array-to-image": "^1.0.0",
+    "chart.js": "^4.4.3",
     "ndarray-pixels": "^3.0.4",
     "react": "^18.2.0",
+    "react-chartjs-2": "^5.2.0",
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
