@@ -54,37 +54,34 @@ function App() {
   const [b, setB] = useState(0);
   const imageBRef = useRef(null);
 
-  const countOccurrences = async (search) => {
-    const result = await fetch(image[0]);
-    const pixels = await getImagePixels(result);
-
-    return pixels.data.reduce((count, array) => {
-        for (let i = 0; i < array.length; i++) {
-            if (array[i] === search) {
-                count++;
-            }
-        }
-
-        return count;
-    }, 0);
-  }
-
   let labels = new Array(256);
 
   for (let i = 0; i < labels.length; i++) {
     labels[i] = i;
   }
 
-  const data = {
+  const [histogramData, setHistogramData] = useState({
     labels,
     datasets: [
       {
         label: 'Dataset 1',
-        data: labels.map(index => countOccurrences(index)),
+        data: [],
         backgroundColor: 'rgba(255, 99, 132, 0.5)',
       },
     ],
-  };
+  })
+
+  const countOccurrences = (pixels) => {
+    // Inicializa um array com tamanho 256 preenchido com zeros
+    const counts = new Array(256).fill(0);
+
+    // Conta ocorrências para cada número no array original
+    pixels.data.forEach((number) => {
+        counts[number]++;
+    });
+
+    return counts;
+};
 
   const filterOptions = [
     "negativo",
@@ -143,7 +140,7 @@ function App() {
         return URL.createObjectURL(file);
       });
     const pixels = await getImagePixels(result); // Implemente a função getImagePixels para obter os pixels da imagem
-      console.log(pixels.data)
+    console.log(pixels.data)
     const x = e.pageX - e.target.offsetLeft;
     const y = e.pageY - e.target.offsetTop;
 
@@ -184,7 +181,7 @@ function App() {
         return URL.createObjectURL(file);
       });
     const pixels = await getImagePixels(result);
-  
+
     const gray = convertRGBToGrayScale(
       pixels.get(x, y, 0),
       pixels.get(x, y, 1),
@@ -395,44 +392,21 @@ function App() {
 
   const histograma = async () => {
     const pixels = await getImagePixels(image[0]);
+    console.log(pixels.data)
+    const results = await Promise.all(countOccurrences(pixels));
+    console.log(results)
+    setHistogramData({
+        ...histogramData,
+        datasets: [
+            {
+                label: 'Dataset 1',
+                data: results,
+                backgroundColor: 'rgba(255, 99, 132, 0.5)',
+            },
+        ]
+    });
+};
 
-    const histograma = ndarray(new Uint32Array(256), [256]);
-
-    // Percorra os pixels da imagem e conte a frequência de cada valor de intensidade
-    for (let x = 0; x < pixels.shape[0]; x++) {
-      for (let y = 0; y < pixels.shape[1]; y++) {
-        const intensidade = Math.floor(pixels.get(x, y) * 255);
-        histograma.set(intensidade, histograma.get(intensidade) + 1);
-      }
-    }
-
-    // Encontre a intensidade máxima no histograma para normalização
-    const maxIntensidade = Math.max(...histograma.data);
-
-    // Crie uma nova imagem representando o histograma
-    const histogramaImgData = new Uint8ClampedArray(256 * 100 * 4); // Altura fixa em 100 para melhor visualização
-
-    for (let i = 0; i < 256; i++) {
-      const altura = Math.floor((histograma.get(i) / maxIntensidade) * 100);
-      for (let j = 0; j < 100; j++) {
-        if (j < altura) {
-          const index = i * 4 * 100 + j * 4;
-          histogramaImgData.set([i, i, i, 255], index); // Define os valores de R, G, B e A
-        }
-      }
-    }
-
-    const histogramaImg = new ImageData(histogramaImgData, 256, 100);
-    const canvas = document.createElement("canvas");
-    canvas.width = 256;
-    canvas.height = 100;
-    const ctx = canvas.getContext("2d");
-    ctx.putImageData(histogramaImg, 0, 0);
-
-    const img = new Image();
-    img.src = canvas.toDataURL();
-    setImageResult(img);
-  };
 
   const espelhamentoHorizontal = async () => {
     const pixels = await getImagePixels(image[0]);
@@ -1360,7 +1334,7 @@ function App() {
             Executar função
           </button>
         </div>
-        <Bar options={options} data={data} />
+        <Bar options={options} data={histogramData} />
       </div>
     </>
   );
